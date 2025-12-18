@@ -51,8 +51,7 @@ def preprocess_documents(df: DataFrame) -> List[Document]:
 
 def preselect_similar_chunks(
     doc_chunks: List[Document],
-) -> Tuple[Dict[str, Document], List[Tuple[str, str]]]:
-
+):
     print("[▶] Pre-selecting similar chunks...")
     print(" | [+] Computing chunk embeddings")
 
@@ -66,14 +65,18 @@ def preselect_similar_chunks(
     print(" | [+] Selecting similar chunks")
     similarity = processing.compute_chunk_similarity(doc_chunks)
 
-    pairs = processing.get_top_n_similar_chunk_pair_indices(
-    similarity, TOP_N_SIMILAR_CHUNKS
-    )
+    pairs_idx = processing.get_top_n_similar_chunk_pair_indices(
+    similarity, TOP_N_SIMILAR_CHUNKS)
 
-    chunk_ids = [c.id for c in doc_chunks]
     chunks = {c.id: c for c in doc_chunks}
 
-    return chunks, pairs, chunk_ids
+    pairs = [
+        (doc_chunks[i].id, doc_chunks[j].id)
+        for i, j in pairs_idx
+    ]
+
+    return chunks, pairs
+
 
 
 
