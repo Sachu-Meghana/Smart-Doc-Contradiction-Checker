@@ -1,0 +1,10 @@
+farm-haystack==1.14.0
+transformers==4.25.1
+sentence-transformers==2.2.2
+torch
+spacy==3.5.4
+nltk
+pandas
+numpy
+scikit-learn
+tqdm

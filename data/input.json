@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Document A",
+    "text_by_page": [
+      "Attendance is mandatory for all students.",
+      "Students with attendance below 75% are not allowed to write exams."
+    ]
+  },
+  {
+    "title": "Document B",
+    "text_by_page": [
+      "Students with attendance below 75% may be allowed to write exams.",
+      "Permission is granted after approval."
+    ]
+  }
+]
