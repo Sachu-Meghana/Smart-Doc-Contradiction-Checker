@@ -67,17 +67,22 @@ def preselect_similar_chunks(
     similarity = processing.compute_chunk_similarity(doc_chunks)
 
     pairs = processing.get_top_n_similar_chunk_pair_indices(
-        similarity, TOP_N_SIMILAR_CHUNKS
+    similarity, TOP_N_SIMILAR_CHUNKS
     )
 
+    chunk_ids = [c.id for c in doc_chunks]
     chunks = {c.id: c for c in doc_chunks}
-    return chunks, pairs
+
+    return chunks, pairs, chunk_ids
+
 
 
 def find_contradictions(
     chunks: Dict[str, Document],
-    chunk_pairs: List[Tuple[str, str]],
+    chunk_pairs: List[Tuple[int, int]],
+    chunk_ids: List[str],
 ):
+
     print("[▶] Selecting contradiction candidates...")
     print(" | [+] Loading models")
 
@@ -86,8 +91,9 @@ def find_contradictions(
     print(" | [+] Computing contradiction scores")
 
     scores = scoring.compute_sentence_contradiction_scores(
-        chunks, chunk_pairs, tokenizer, model
+    chunks, chunk_pairs, chunk_ids, tokenizer, model
     )
+
 
     print(" | [+] Selecting candidates")
 
@@ -103,8 +109,9 @@ def find_contradictions(
 if __name__ == "__main__":
     df = load_documents()
     chunks = preprocess_documents(df)
-    chunk_map, chunk_pairs = preselect_similar_chunks(chunks)
-    candidates = find_contradictions(chunk_map, chunk_pairs)
+    chunk_map, chunk_pairs, chunk_ids = preselect_similar_chunks(chunks)
+    candidates = find_contradictions(chunk_map, chunk_pairs, chunk_ids)
+
 
     candidates.to_csv("output/candidates.csv", index=False)
     print(".... Saving candidates to output/candidates.csv")
