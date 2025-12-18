@@ -65,4 +65,5 @@ def get_top_n_similar_chunk_pair_indices(similarity, n):
             pairs.append((i, j, similarity[i][j]))
 
     pairs = sorted(pairs, key=lambda x: x[2], reverse=True)
-    return [(str(p[0]), str(p[1])) for p in pairs[:n]]
+    return [(i, j) for i, j, _ in pairs[:n]]
+
