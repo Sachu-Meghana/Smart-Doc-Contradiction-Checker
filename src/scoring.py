@@ -29,14 +29,11 @@ def _evaluate_contradictions(premise, hypothesis, tokenizer, model):
 
 
 def compute_sentence_contradiction_scores(
-    chunks, chunk_pairs, chunk_ids, tokenizer, model
+    chunks, chunk_pairs, tokenizer, model
 ):
     rows = []
 
-    for a, b in chunk_pairs:
-        id_a = chunk_ids[a]
-        id_b = chunk_ids[b]
-
+    for id_a, id_b in chunk_pairs:
         sents_a = chunks[id_a].sentences
         sents_b = chunks[id_b].sentences
 
