@@ -79,8 +79,7 @@ def preselect_similar_chunks(
 
 def find_contradictions(
     chunks: Dict[str, Document],
-    chunk_pairs: List[Tuple[int, int]],
-    chunk_ids: List[str],
+    chunk_pairs,
 ):
 
     print("[▶] Selecting contradiction candidates...")
@@ -91,9 +90,8 @@ def find_contradictions(
     print(" | [+] Computing contradiction scores")
 
     scores = scoring.compute_sentence_contradiction_scores(
-    chunks, chunk_pairs, chunk_ids, tokenizer, model
-    )
-
+    chunks, chunk_pairs, tokenizer, model
+)
 
     print(" | [+] Selecting candidates")
 
@@ -109,7 +107,7 @@ def find_contradictions(
 if __name__ == "__main__":
     df = load_documents()
     chunks = preprocess_documents(df)
-    chunk_map, chunk_pairs, chunk_ids = preselect_similar_chunks(chunks)
+    chunk_map, chunk_pairs = preselect_similar_chunks(chunks)
     candidates = find_contradictions(chunk_map, chunk_pairs, chunk_ids)
 
 
