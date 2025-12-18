@@ -1,3 +1,4 @@
+import os
 from functools import partial
 from typing import Dict, List, Tuple
 
@@ -51,7 +52,8 @@ def preprocess_documents(df: DataFrame) -> List[Document]:
 
 def preselect_similar_chunks(
     doc_chunks: List[Document],
-):
+) -> Tuple[Dict[str, Document], List[Tuple[str, str]]]:
+
     print("[▶] Pre-selecting similar chunks...")
     print(" | [+] Computing chunk embeddings")
 
@@ -65,26 +67,27 @@ def preselect_similar_chunks(
     print(" | [+] Selecting similar chunks")
     similarity = processing.compute_chunk_similarity(doc_chunks)
 
-    pairs_idx = processing.get_top_n_similar_chunk_pair_indices(
-    similarity, TOP_N_SIMILAR_CHUNKS)
+    # indices like (0,1), (2,3)
+    index_pairs = processing.get_top_n_similar_chunk_pair_indices(
+        similarity, TOP_N_SIMILAR_CHUNKS
+    )
 
-    chunks = {c.id: c for c in doc_chunks}
+    # map index → document id
+    chunk_ids = [c.id for c in doc_chunks]
 
-    pairs = [
-        (doc_chunks[i].id, doc_chunks[j].id)
-        for i, j in pairs_idx
+    id_pairs = [
+        (chunk_ids[i], chunk_ids[j])
+        for i, j in index_pairs
     ]
 
-    return chunks, pairs
-
-
+    chunks = {c.id: c for c in doc_chunks}
+    return chunks, id_pairs
 
 
 def find_contradictions(
     chunks: Dict[str, Document],
-    chunk_pairs,
+    chunk_pairs: List[Tuple[str, str]],
 ):
-
     print("[▶] Selecting contradiction candidates...")
     print(" | [+] Loading models")
 
@@ -93,8 +96,8 @@ def find_contradictions(
     print(" | [+] Computing contradiction scores")
 
     scores = scoring.compute_sentence_contradiction_scores(
-    chunks, chunk_pairs, tokenizer, model
-)
+        chunks, chunk_pairs, tokenizer, model
+    )
 
     print(" | [+] Selecting candidates")
 
@@ -103,16 +106,18 @@ def find_contradictions(
     )
 
     final = scoring.retrieve_candidate_info(top, chunks)
-
     return final
 
 
 if __name__ == "__main__":
     df = load_documents()
-    chunks = preprocess_documents(df)
-    chunk_map, chunk_pairs = preselect_similar_chunks(chunks)
-    candidates = find_contradictions(chunk_map, chunk_pairs, chunk_ids)
+    doc_chunks = preprocess_documents(df)
 
+    chunk_map, chunk_pairs = preselect_similar_chunks(doc_chunks)
+
+    candidates = find_contradictions(chunk_map, chunk_pairs)
+
+    os.makedirs("output", exist_ok=True)
 
     candidates.to_csv("output/candidates.csv", index=False)
     print(".... Saving candidates to output/candidates.csv")
