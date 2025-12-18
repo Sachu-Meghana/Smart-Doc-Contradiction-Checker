@@ -1,10 +1,8 @@
 import itertools
 import torch
 import pandas as pd
-import nltk
-nltk.download("punkt", quiet=True)
-from nltk.tokenize import sent_tokenize
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from nltk.tokenize import sent_tokenize
 
 
 def load_contradiction_model(
@@ -12,6 +10,7 @@ def load_contradiction_model(
 ):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    model.eval()
     return tokenizer, model
 
 
@@ -37,8 +36,11 @@ def compute_sentence_contradiction_scores(
     rows = []
 
     for id_a, id_b in chunk_pairs:
-        sents_a = sent_tokenize(chunks[id_a].content)
-        sents_b = sent_tokenize(chunks[id_b].content)
+        chunk_a = chunks[id_a]
+        chunk_b = chunks[id_b]
+
+        sents_a = sent_tokenize(chunk_a.content)
+        sents_b = sent_tokenize(chunk_b.content)
 
         for i, j in itertools.product(
             range(len(sents_a)), range(len(sents_b))
@@ -50,7 +52,6 @@ def compute_sentence_contradiction_scores(
             rows.append(
                 [id_a, id_b, i, j, entail, neutral, contra]
             )
-
 
     return pd.DataFrame(
         rows,
@@ -76,12 +77,12 @@ def retrieve_candidate_info(candidates, chunks):
     candidates = candidates.copy()
 
     candidates["sentence_A_text"] = [
-        chunks[c].sentences[i]
+        sent_tokenize(chunks[c].content)[i]
         for c, i in zip(candidates.chunk_A, candidates.sentence_A)
     ]
 
     candidates["sentence_B_text"] = [
-        chunks[c].sentences[i]
+        sent_tokenize(chunks[c].content)[i]
         for c, i in zip(candidates.chunk_B, candidates.sentence_B)
     ]
 
