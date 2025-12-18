@@ -1,6 +1,9 @@
 import itertools
 import torch
 import pandas as pd
+import nltk
+nltk.download("punkt", quiet=True)
+from nltk.tokenize import sent_tokenize
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 
@@ -34,8 +37,8 @@ def compute_sentence_contradiction_scores(
     rows = []
 
     for id_a, id_b in chunk_pairs:
-        sents_a = chunks[id_a].sentences
-        sents_b = chunks[id_b].sentences
+        sents_a = sent_tokenize(chunks[id_a].content)
+        sents_b = sent_tokenize(chunks[id_b].content)
 
         for i, j in itertools.product(
             range(len(sents_a)), range(len(sents_b))
@@ -45,8 +48,9 @@ def compute_sentence_contradiction_scores(
             )
 
             rows.append(
-                [a, b, i, j, entail, neutral, contra]
+                [id_a, id_b, i, j, entail, neutral, contra]
             )
+
 
     return pd.DataFrame(
         rows,
