@@ -11,6 +11,24 @@ def clean_and_combine_pages(pages):
     return "\n".join(pages)
 
 
+def compute_sentence_embeddings(sentences, model_name, show_progress_bar=False):
+    model = SentenceTransformer(model_name)
+    return model.encode(sentences, show_progress_bar=show_progress_bar)
+
+
+def split_into_sentences(text: str):
+    text = text.replace("\n", " ").strip()
+    doc = nlp(text)
+
+    sentences = []
+    for sent in doc.sents:
+        s = sent.text.strip()
+        if len(s) >= 10:
+            sentences.append(s)
+
+    return sentences
+
+
 def convert_frame_to_haystack(df):
     docs = []
     for _, row in df.iterrows():
@@ -23,12 +41,7 @@ def convert_frame_to_haystack(df):
     return docs
 
 
-def clean_sentence_splits(
-    sentences,
-    toc_period_threshold,
-    length_minimum,
-    length_maximum,
-):
+def clean_sentence_splits(sentences, toc_period_threshold, length_minimum, length_maximum):
     cleaned = []
     for s in sentences:
         s = s.strip()
@@ -66,5 +79,3 @@ def get_top_n_similar_chunk_pair_indices(similarity, n):
 
     pairs = sorted(pairs, key=lambda x: x[2], reverse=True)
     return [(p[0], p[1]) for p in pairs[:n]]
-
-
